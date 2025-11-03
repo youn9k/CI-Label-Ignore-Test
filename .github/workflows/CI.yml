@@ -1,0 +1,43 @@
+name: ⚙️ CI - PR Label Test
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches: [main, develop]
+
+jobs:
+  check_pr_labels:
+    runs-on: macos-15
+    steps:
+      - name: 🔍 Check PR labels
+        run: |
+          echo "Checking PR labels..."
+
+          echo "github.event: ${{ github.event }}"
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.event.pull_request: ${{ github.event.pull_request }}"
+          echo "github.event.pull_request.labels: ${{ github.event.pull_request.labels }}"
+          echo "github.event.pull_request.labels[].name: ${{ github.event.pull_request.labels[].name }}"
+          
+          # PR 이벤트인지 한 번 더 방어
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "This is not a pull_request event. Skipping."
+            exit 0
+          fi
+
+          # GitHub가 내려주는 이벤트 JSON 파일에서 라벨만 뽑기
+          labels=$(jq -r '.pull_request.labels[].name // empty' "$GITHUB_EVENT_PATH")
+
+          echo "Detected labels: $labels"
+
+          if echo "$labels" | grep -q "⚙️ ENV"; then
+            echo "✅ '⚙️ ENV' label detected."
+          else
+            echo "❎ '⚙️ ENV' label not found."
+          fi
+
+          # 테스트용이니까 항상 성공으로 끝냄
+          exit 0
