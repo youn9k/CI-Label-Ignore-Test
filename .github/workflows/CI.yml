@@ -5,7 +5,7 @@ on:
     types:
       - opened
       - reopened
-      - synchronize
+      # - synchronize
     branches: [main, develop]
 
 jobs:
@@ -16,12 +16,14 @@ jobs:
         run: |
           echo "Checking PR labels..."
 
-          echo "github.event: ${{ github.event }}"
+          # GitHub에서 내려온 PR 이벤트를 확인용으로 찍기
           echo "github.event_name: ${{ github.event_name }}"
-          echo "github.event.pull_request: ${{ github.event.pull_request }}"
-          echo "github.event.pull_request.labels: ${{ github.event.pull_request.labels }}"
-          echo "github.event.pull_request.labels[].name: ${{ github.event.pull_request.labels[].name }}"
-          
+          echo "github.event.action: ${{ github.event.action }}"
+          echo "github.event.pull_request.number: ${{ github.event.pull_request.number }}"
+          echo "github.event.pull_request.title: ${{ github.event.pull_request.title }}"
+          # labels는 배열이라 toJson으로 찍어줘야 함
+          echo "github.event.pull_request.labels (json): ${{ toJson(github.event.pull_request.labels) }}"
+
           # PR 이벤트인지 한 번 더 방어
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             echo "This is not a pull_request event. Skipping."
