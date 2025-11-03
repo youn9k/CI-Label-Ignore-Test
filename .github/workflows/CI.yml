@@ -5,7 +5,7 @@ on:
     types:
       - opened
       - reopened
-      # - synchronize
+      - synchronize
     branches: [main, develop]
 
 jobs:
@@ -24,12 +24,6 @@ jobs:
           # labels는 배열이라 toJson으로 찍어줘야 함
           echo "github.event.pull_request.labels (json): ${{ toJson(github.event.pull_request.labels) }}"
 
-          # PR 이벤트인지 한 번 더 방어
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            echo "This is not a pull_request event. Skipping."
-            exit 0
-          fi
-
           # GitHub가 내려주는 이벤트 JSON 파일에서 라벨만 뽑기
           labels=$(jq -r '.pull_request.labels[].name // empty' "$GITHUB_EVENT_PATH")
 
@@ -37,9 +31,11 @@ jobs:
 
           if echo "$labels" | grep -q "⚙️ ENV"; then
             echo "✅ '⚙️ ENV' label detected."
+            exit 0
           else
             echo "❎ '⚙️ ENV' label not found."
           fi
-
-          # 테스트용이니까 항상 성공으로 끝냄
-          exit 0
+      - name: Some Next Step
+        run: |
+          echo "next step..."
+    
