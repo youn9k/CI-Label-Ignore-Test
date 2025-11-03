@@ -31,11 +31,15 @@ jobs:
 
           if echo "$labels" | grep -q "⚙️ ENV"; then
             echo "✅ '⚙️ ENV' label detected."
-            exit 0
+            exit 78 // 다음 스텝 진행하지 않고, 워크 플로우 종료
           else
             echo "❎ '⚙️ ENV' label not found."
           fi
+
       - name: Some Next Step
         run: |
           echo "next step..."
-    
+
+      - name: Some Next Step2
+        run: |
+          echo "next step2..."
