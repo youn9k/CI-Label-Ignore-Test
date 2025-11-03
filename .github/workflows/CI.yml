@@ -13,6 +13,7 @@ jobs:
     runs-on: macos-15
     steps:
       - name: 🔍 Check PR labels
+        id: check
         run: |
           echo "Checking PR labels..."
 
@@ -21,25 +22,27 @@ jobs:
           echo "github.event.action: ${{ github.event.action }}"
           echo "github.event.pull_request.number: ${{ github.event.pull_request.number }}"
           echo "github.event.pull_request.title: ${{ github.event.pull_request.title }}"
-          # labels는 배열이라 toJson으로 찍어줘야 함
           echo "github.event.pull_request.labels (json): ${{ toJson(github.event.pull_request.labels) }}"
 
-          # GitHub가 내려주는 이벤트 JSON 파일에서 라벨만 뽑기
+          # GitHub 이벤트 JSON에서 라벨만 추출
           labels=$(jq -r '.pull_request.labels[].name // empty' "$GITHUB_EVENT_PATH")
-
           echo "Detected labels: $labels"
 
+          # 결과를 output으로 전달
           if echo "$labels" | grep -q "⚙️ ENV"; then
             echo "✅ '⚙️ ENV' label detected."
-            exit 78 // 다음 스텝 진행하지 않고, 워크 플로우 종료
+            echo "skip_ci=true" >> "$GITHUB_OUTPUT"
           else
             echo "❎ '⚙️ ENV' label not found."
+            echo "skip_ci=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Some Next Step
+        if: steps.check.outputs.skip_ci == 'false'
         run: |
           echo "next step..."
 
       - name: Some Next Step2
+        if: steps.check.outputs.skip_ci == 'false'
         run: |
           echo "next step2..."
